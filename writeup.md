@@ -16,7 +16,7 @@ The goals / steps of this project are the following:
 [//]: # (Image References)
 
 [image1]: ./examples/0_original_image.jpg "Distorted"
-[image2]: ./examples/0_undistorted_example "Undistorted"
+[image2]: ./examples/0_undistorted_example.jpg "Undistorted"
 [image3]: ./examples/1_original_image.jpg "Distorted"
 [image4]: ./examples/1_undistorted_example "Undistorted"
 [video1]: ./project_video.mp4 "Video"
