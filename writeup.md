@@ -15,10 +15,13 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/0_original_image.jpg "Distorted"
-[image2]: ./examples/0_undistorted_example.jpg "Undistorted"
-[image3]: ./examples/1_original_image.jpg "Distorted"
-[image4]: ./examples/1_undistorted_example "Undistorted"
+[image1]: ./output_images/0_original_image.jpg "Distorted"
+[image2]: ./output_images/0_undistorted_example.jpg "Undistorted"
+[image3]: ./output_images/1_original_image.jpg "Distorted"
+[image4]: ./output_images/1_undistorted_example.jpg "Undistorted"
+[image5]: ./output_images/2_threshold_binary.jpg "Threshold Binary Image"
+[image6]: ./output_images/3_transformed_image.jpg "Perfective Transformed Image"
+[image7]: ./output_images/4_lane_line_detection.jpg "Lane Line Pixel Detection and Fit"
 [video1]: ./project_video.mp4 "Video"
 
 ## [Rubric Points](https://review.udacity.com/#!/rubrics/571/view)
