@@ -24,7 +24,7 @@ dist = dist_pickle['dist']
 #M = M_pickle['M']
 offset = 320
 img_size = (720, 1280, 3)
-src = np.float32([[203, img_size[0]], [1170, img_size[0]], [565, 460], [723, 460]])
+src = np.float32([[236, img_size[0]], [1187, img_size[0]], [580, 460], [720, 460]])
 dst = np.float32([[offset, img_size[0]], [img_size[1]-offset, img_size[0]],
                   [offset, 0], [img_size[1]-offset, 0]])
 M = cv2.getPerspectiveTransform(src, dst)
@@ -140,10 +140,10 @@ if (process_video):
         video_out = video_in.fl_image(find_lane)
         video_out.write_videofile(output_filename, audio=False)
 else:
-    img = cv2.imread('test_images/test1.jpg')
+    img = cv2.imread('test_images/test2.jpg')
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     output = find_lane(img, generate_examples=True)
-    cv2.imwrite('output_images/4_final.jpg', cv2.cvtColor(output, cv2.COLOR_RGB2BGR))
+    cv2.imwrite('output_images/5_final.jpg', cv2.cvtColor(output, cv2.COLOR_RGB2BGR))
 
 
 

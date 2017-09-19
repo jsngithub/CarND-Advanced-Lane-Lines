@@ -24,7 +24,9 @@ class Line():
         
         #radius of curvature of the line in some units
         self.radius_of_curvature_left = None 
-        self.radius_of_curvature_right = None 
+        self.radius_of_curvature_right = None
+        self.radius_of_curvatore = None
+        self.offset = None
         
         #distance in meters of vehicle center from the line
         self.line_base_pos = None 
@@ -154,8 +156,15 @@ class Line():
         # Calculate the new radii of curvature
         left = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
         right = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+                
+        # Calculate the offset
+        left_lane_position = left_fit_cr[0]*(719*ym_per_pix)**2 + left_fit_cr[1]*(719*ym_per_pix) + left_fit_cr[2]
+        right_lane_position = right_fit_cr[0]*(719*ym_per_pix)**2 + right_fit_cr[1]*(719*ym_per_pix) + right_fit_cr[2]
+        center_of_lane = right_lane_position - left_lane_position
+        center_of_car = (img_size[1] / 2) * xm_per_pix
+        offset = center_of_car - center_of_lane
         
-        return left, right
+        return left, right, offset
         
     def overlay_lanes(self, Minv, img_size=(720, 1280, 3)):
         # Generate x and y values for plotting
@@ -182,7 +191,6 @@ class Line():
         # Combine the result with the original image
         self.out_img = cv2.addWeighted(self.cur_img, 1, newwarp, 0.3, 0)
         self.out_img_warp = cv2.addWeighted(self.color_mask, 1, color_warp, 0.3, 0)
-        #cv2.putText(self.out_img, '{:5.1f}m, {:5.1f}m'.format(self.radius_of_curvature_left, self.radius_of_curvature_right), (550, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, [0, 0, 0])
                 
     def detect_lanes(self, img, mask, warped, Minv, nwindows=13, margin=100, minpix=50, img_size = (720, 1280, 3), navg=4, debug=False):
         self.cur_img = img
@@ -200,36 +208,34 @@ class Line():
         self.current_left_fit = np.polyfit(self.lefty, self.leftx, 2)
         self.current_right_fit = np.polyfit(self.righty, self.rightx, 2)
         
+        # Define conversions in x pixels space to meters
+        xm_per_pix = 3.7/700 # meters per pixel in x dimension
+        
         # Sanity Check or reset
-        # Checking that they have similar curvature
-        # Checking that they are separated by approximately the right distance horizontally
-        # Checking that they are roughly parallel
-        left_curve, right_curve = self.calculate_curvature()
+        left_curve, right_curve, offset = self.calculate_curvature()
         ploty = np.linspace(0, img_size[0]-1, img_size[0])
         left_fitx = self.current_left_fit[0]*ploty**2 + self.current_left_fit[1]*ploty + self.current_left_fit[2]
         right_fitx = self.current_right_fit[0]*ploty**2 + self.current_right_fit[1]*ploty + self.current_right_fit[2]       
-        distance = right_fitx - left_fitx
-        
-        #if (abs(left_curve - right_curve) > 500):
-        #    self.detected = False
+        distance = (right_fitx - left_fitx) * xm_per_pix
         
         if (debug):
             print ("Mean Distance: ", np.mean(distance))
             print ("Std Distance: ", np.std(distance))
             
-        if (np.mean(distance) > 740 or np.mean(distance) < 540):
+        if (np.mean(distance) > 4.6 or np.mean(distance) < 2.8):
             self.detected = False
-        elif (np.std(distance) > 50):
+        elif (np.std(distance) > 0.3):
+            self.detected = False
+        elif ((self.current_left_fit[0] * self.current_right_fit[0]) < 0):
             self.detected = False
         else:
             self.detected = True
                           
-        #self.radius_of_curvature_left = left_curve
-        #self.radius_of_curvature_right = right_curve
-        
         if (self.detected):
             self.radius_of_curvature_left = left_curve
             self.radius_of_curvature_right = right_curve
+            self.radius_of_curvature = (left_curve + right_curve)/2
+            self.offset = offset
             self.bad_count = 0
             
             if (len(self.recent_xfitted_left)>=navg):
@@ -259,13 +265,17 @@ class Line():
             self.out_img = self.cur_img
             self.out_img_warp = self.warped
         
-        cv2.putText(self.out_img, '{:5.1f}m, {:5.1f}m, {:5.1f}(mean), {:5.1f}(std), bad: {:d}'.format(self.radius_of_curvature_left, self.radius_of_curvature_right, np.mean(distance), np.std(distance), self.bad_count), (250, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, [255, 255, 255])
+        cv2.putText(self.out_img, 'Radius of Curvature {:5.1f}m'.format(self.radius_of_curvature), (400, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, [0,0,0])
+        cv2.putText(self.out_img, 'Offset from the Center {:5.1f}m'.format(self.offset), (400, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, [0,0,0])
+        #cv2.putText(self.out_img, '{:5.1f}m, {:5.1f}m, {:5.1f}(mean), {:5.1f}(std), bad: {:d}'.format(self.radius_of_curvature_left, self.radius_of_curvature_right, np.mean(distance), np.std(distance), self.bad_count), (250, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, [0,0,0])
         self.mean_distance.append(np.mean(distance))
         self.std_distance.append(np.std(distance))  
         self.diff_radius.append(abs(left_curve-right_curve))
         
-        return np.vstack([self.out_img, self.out_img_warp])
+        if (debug): cv2.imwrite('output_images/4_line_detect.jpg', self.out_img_warp)
         
+        #return np.vstack([self.out_img, self.out_img_warp])
+        return self.out_img
 
 
 
