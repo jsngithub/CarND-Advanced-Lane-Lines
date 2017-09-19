@@ -160,7 +160,7 @@ class Line():
         # Calculate the offset
         left_lane_position = left_fit_cr[0]*(719*ym_per_pix)**2 + left_fit_cr[1]*(719*ym_per_pix) + left_fit_cr[2]
         right_lane_position = right_fit_cr[0]*(719*ym_per_pix)**2 + right_fit_cr[1]*(719*ym_per_pix) + right_fit_cr[2]
-        center_of_lane = right_lane_position - left_lane_position
+        center_of_lane = (right_lane_position + left_lane_position)/2
         center_of_car = (img_size[1] / 2) * xm_per_pix
         offset = center_of_car - center_of_lane
         
