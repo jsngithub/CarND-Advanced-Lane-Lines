@@ -41,8 +41,8 @@ ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_siz
 
 # save example image for use in the writeup
 udst = cv2.undistort(img, mtx, dist, None, mtx)
-cv2.imwrite('examples/0_original_image.jpg', img)
-cv2.imwrite('examples/0_undistorted_example.jpg', udst)
+cv2.imwrite('output_images/0_original_image.jpg', img)
+cv2.imwrite('output_images/0_undistorted_example.jpg', udst)
 
 # save for future use
 import pickle

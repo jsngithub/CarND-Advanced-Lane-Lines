@@ -20,7 +20,7 @@ The goals / steps of this project are the following:
 [image3]: ./output_images/1_original_image.jpg "Distorted"
 [image4]: ./output_images/1_undistorted_example.jpg "Undistorted"
 [image5]: ./output_images/2_threshold_binary.jpg "Threshold Binary Image"
-[image6]: ./output_images/3_transformed_image.jpg "Perfective Transformed Image"
+[image6]: ./output_images/3_threshold_binary_warped.jpg "Perfective Transformed Image"
 [image7]: ./output_images/4_lane_line_detection.jpg "Lane Line Pixel Detection and Fit"
 [video1]: ./project_video.mp4 "Video"
 
@@ -40,7 +40,7 @@ You're reading it!
 
 #### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
 
-The code for this step is contained in the python code `calibrate_camera.py`.  
+The code for this step is contained in the python code `calibrate_camera.py`  
 
 I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
 
@@ -61,39 +61,34 @@ To demonstrate this step, I applied the distortion correction to one of the test
 
 #### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+I used a combination of color and gradient thresholds to generate a binary image.  It uses a yellow color mask to detect yellow lines; white color mask to detect white lines; then it uses a combination of canny and directional masks to mask out white parts of the image that is not a lane line.  Lines 40 to 63 and 73 to 117 in `advanced_lanefind.py` show these steps.  Here is an example of my output for this step.  
 
-![alt text][image3]
+![Binary Threshold Image][image5]
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+The code for my perspective transform includes a function called `warp()`, which appears in lines 65 through 67 in the file `advanced_lanefind.py`  The `warp()` function takes as inputs an image (`img`) and returns a warped image.  I chose the hardcode the source and destination points in lines 27 to 29 of `advanced_lanefind.py`:
 
-```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
-```
+`offset = 320`
+
+`img_size = (720, 1280, 3)`
+
+`src = np.float32([[203, img_size[0]], [1170, img_size[0]], [565, 460], [723, 460]])`
+
+`dst = np.float32([[offset, img_size[0]], [img_size[1]-offset, img_size[0]],                  [offset, 0], [img_size[1]-offset, 0]])`
 
 This resulted in the following source and destination points:
 
 | Source        | Destination   | 
 |:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
+| 203, 720      | 320, 720      | 
+| 1170, 720     | 960, 720      |
+| 565, 460      | 320, 0        |
+| 723, 460      | 960, 0        |
 
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
+I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.  Here is an example of the warped binary thresholded image from the previous step:
 
-![alt text][image4]
+![Warped Binary Threshold Image][image6]
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
@@ -117,7 +112,7 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./output_images/project_video.mp4)
 
 ---
 
